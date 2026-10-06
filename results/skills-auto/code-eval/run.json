@@ -1,0 +1,79 @@
+{
+  "task": "code-eval",
+  "condition": "skills-auto",
+  "role": "eval",
+  "error": null,
+  "timestamp": "2026-10-06T05:22:41.587497+00:00",
+  "skills_sha256": "43a6a2a8e1a2c48bf064218783eaf05859f546e945c3e635227837a97dcd11cc",
+  "seconds": 86.9,
+  "tokens": {
+    "input": 84489,
+    "output": 4256,
+    "total": 88745
+  },
+  "tool_calls": 25,
+  "subagent_calls": 0,
+  "skills_read": 1,
+  "skills_modified": false,
+  "final_message": "Fixed duration parsing for all documented formats, corrected billable-block rounding and negative-minute handling, and made `add_slot` return a new list without mutating its input. Added regression tests and changelog entries. The full test suite passes: **8 passed**.\n\nChanged: `workspace/bookings/billing.py`, `workspace/bookings/timeutil.py`, `workspace/bookings/schedule.py`, `workspace/bookings/calendar_export.py`, `workspace/CHANGELOG.md`. Created: `workspace/tests/test_regressions.py`.",
+  "score": 0.9090909090909091,
+  "passed": 10,
+  "total": 11,
+  "checks": [
+    {
+      "name": "visible_suite_passes",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "tests_not_modified",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "parse_duration_all_formats",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "other_caller_fixed",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "billable_blocks_round_up",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "add_slot_no_shared_state",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "negative_minutes_rejected",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "rule_type_hints",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "rule_regression_tests",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "rule_changelog",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "rule_version_bump",
+      "passed": false,
+      "detail": ""
+    }
+  ]
+}

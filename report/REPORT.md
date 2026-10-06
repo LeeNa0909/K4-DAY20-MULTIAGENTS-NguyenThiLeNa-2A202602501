@@ -10,8 +10,19 @@ Ngày thực hiện: 06/10/2026 (Asia/Saigon). Bản ghi thời gian của runne
 
 - Mô hình: `openai/gpt-6-luna` qua OpenRouter (`https://openrouter.ai/api/v1`), `LAB_TEMPERATURE=0`, `recursion_limit=60`.
 - Deep Agents: `0.7.21`; Ubuntu WSL trên Windows; Python Linux `3.14.4`. Môi trường chạy chính: `/root/.local/share/lab-k4-day20-venv`; không dùng Docker. Phiên bản phụ thuộc được lưu trong `requirements-freeze.txt`.
-- Đến lúc đóng băng: 9 lần chạy hợp lệ trên tập học và 1 lần chạy lại do CRLF; curator chạy 1 lần, kiểm tra kết nối 1 lần. Tài liệu hiện tại không nêu ngân sách số lần chạy cụ thể.
-- Commit của tag `freeze`: điền sau khi tạo tag; H1–H3 được commit trước tag.
+- Tổng: 22 lần chạy tác vụ (18 chính thức, 3 dev trước đóng băng, 1 bản đầu có vấn đề CRLF); curator 1 lần và kiểm tra kết nối 1 lần. Tổng token đo được của tác vụ và curator: 1.203.048, chưa tính lời gọi kiểm tra kết nối; test ngoại tuyến không gọi API. Tài liệu hiện tại không nêu ngân sách số lần chạy cụ thể.
+- Commit của tag `freeze`: `ea8be84e81bd1caec830d384a5927fbab62eadee`, 06/10/2026 12:14:17 +07:00; commit hypotheses `17813bc` lúc 12:13:52 +07:00 đứng trước tag.
+
+Cấu hình được make_model đọc (khóa riêng trong .env, không đưa vào git):
+
+```dotenv
+AZURE_OPENAI_ENDPOINT=https://openrouter.ai/api/v1
+AZURE_OPENAI_KEY=<OpenRouter API key>
+AZURE_OPENAI_DEPLOYMENT_MODEL=openai/gpt-6-luna
+LAB_TEMPERATURE=0
+```
+
+Project này không đọc LLM_PROVIDER hoặc EMBEDDING_PROVIDER và không có pipeline embedding.
 
 ## 2. Giả thuyết (commit TRƯỚC tag `freeze`, Phần 4.0)
 
@@ -61,6 +72,8 @@ Reviewer không được gọi trên tập học. Token trung bình tăng từ 3
 
 Vết code cho thấy tác tử chính đọc lại source sau implementer, chạy test ban đầu sai thư mục rồi sửa bằng `cd workspace`; cuối cùng 6 passed và các assert bổ sung đạt. Lời giao việc implementer truyền yêu cầu docstring nhưng cấm mọi sửa đổi trong tests/, rộng hơn yêu cầu chỉ bảo vệ test gốc; điều này cũng không khuyến khích thêm regression test. Lời giao explorer cho data thiếu các trường cần tính và ranh giới thời gian; subagent vì thế báo thiếu thông tin xử lý amount dù đề chính đã quy định. Tác tử chính vẫn tính theo đề gốc và đạt 5/5 kỹ thuật.
 
+Trên tập đánh giá: code-eval gọi explorer 1 lần, data-eval gọi general-purpose 1 lần, logs-eval gọi explorer và reviewer (2 lần). Ở code-eval, tác tử chính yêu cầu explorer sửa code nhưng explorer giữ đúng system prompt chỉ đọc, nên tác tử chính tự thực hiện. Reviewer ở logs-eval được gọi trước khi có tệp đầu ra và báo rõ giới hạn đó. Tổng cộng cả sáu tác vụ có 8 lần gọi task; không phải mọi lời giao việc đều chọn đúng vai trò hoặc truyền đủ ngữ cảnh.
+
 Ở logs, lời giao general-purpose chứa đầy đủ quy tắc parsing. Báo cáo subagent nói đã kiểm tra schema nhưng tệp dùng timestamp/service_counts; tác tử chính đọc lại, đổi thành timestamp_utc/counts_by_service rồi kiểm tra JSON và tổng đếm. Đây là bằng chứng cần kiểm tra sản phẩm thực, không chỉ tin báo cáo. Vết không chứa các bước bên trong subagent nên không kết luận quá mức về quá trình của nó.
 
 ## 6. Self-evolving: skill do curator sinh (Phần 3)
@@ -87,37 +100,109 @@ Vết cho thấy đọc skill phù hợp trước xử lý. Code thêm annotatio
 
 ## 7. Kết quả so sánh (Phần 4.3, 4.4)
 
-> Dán nội dung `report/table.md` và kết quả `python scripts/check_breakdown.py`. Nêu các lần chạy có `error` hoặc `skills_modified = true` (nếu có) và cách xử lý.
+Nội dung nguyên bản do `python -m lab.compare` sinh trong `table.md`:
+
+| Task | baseline | subagents | skills-auto |
+|---|---|---|---|
+| code-learn | 7/10 | 7/10 | 10/10 |
+| data-learn | 5/8 | 5/8 | 7/8 |
+| logs-learn | 6/9 | 6/9 | 9/9 |
+| code-eval | 7/11 | 7/11 | 10/11 |
+| data-eval | 5/9 | 5/9 | 6/9 |
+| logs-eval | 6/10 | 6/10 | 9/10 |
+| **Mean score - learning tasks** | 0.66 | 0.66 | 0.96 |
+| **Mean score - evaluation tasks** | 0.60 | 0.60 | 0.83 |
+| **Mean tokens per run** | 34,115 | 78,397 | 53,273 |
+| **Runs that read a skill** | 0/6 | 0/6 | 6/6 |
+
+Thống kê nguyên bản từ `scripts/check_breakdown.py`, lưu trong `check_breakdown.txt`:
 
 ```text
-(dán bảng ở đây)
+condition     role    technical  house rules  mean tokens  read a skill
+baseline      eval     18/18         0/12          30,069      0/3
+baseline      learn    18/18         0/9           38,161      0/3
+subagents     eval     18/18         0/12          77,345      0/3
+subagents     learn    18/18         0/9           79,449      0/3
+skills-auto   eval     18/18         7/12          48,619      3/3
+skills-auto   learn    18/18         8/9           57,927      3/3
 ```
+
+Mỗi điểm trung bình là trung bình tỉ lệ đạt của từng tác vụ, không phải gộp số check. Bảng hiển thị điểm với hai chữ số thập phân và phần nguyên của token trung bình; `metrics.json` giữ số liệu đầy đủ để tính chênh lệch. Cả 18 bản ghi chính thức có error=null, skills_modified=false và tokens.total>0. Sáu bản ghi skills-auto đều dùng hash `43a6a2a8e1a2c48bf064218783eaf05859f546e945c3e635227837a97dcd11cc`.
+
+`verify_freeze.txt`: `checked 6 runs of skill conditions: OK`. Lần kiểm tra đầu báo diff ở README gốc của skills/ vì Git Windows và WSL có cách xử lý CRLF khác nhau; đối chiếu byte xác nhận cả ba SKILL.md vẫn đúng hash curator. Đặt core.autocrlf=true riêng cho repo để thống nhất Git; không thay đổi bytes của skill. Kết quả kiểm tra sau đó đạt, không cần chạy lại thí nghiệm.
 
 ## 8. Phân tích
 
-> Trả lời từng câu bằng số liệu từ mục 7 và bằng chứng từ vết. Kết quả âm hoặc không có khác biệt vẫn hợp lệ nếu được phân tích tốt.
+1. **So sánh và giả thuyết.** Skills-auto cải thiện điểm học từ 0,6639 lên 0,9583 (+29,44 điểm phần trăm), và điểm đánh giá từ 0,5973 lên 0,8253 (+22,79 điểm phần trăm). Subagents có điểm bằng baseline ở mọi tác vụ. H1 và H2 phù hợp số liệu của lần chạy này; chưa phải kiểm định thống kê. H3 cũng phù hợp về hướng: mức cải thiện trên đánh giá thấp hơn trên học 6,65 điểm phần trăm. Skills-auto cải thiện cả hai tập, nhưng chuyển giao không đầy đủ, đặc biệt ở data-eval chỉ tăng từ 5/9 lên 6/9.
 
-1. So với `baseline`, điều kiện nào cải thiện điểm tác vụ **học**? Điều kiện nào cải thiện điểm tác vụ **đánh giá**? Có điều kiện nào cải thiện tác vụ học nhưng không cải thiện tác vụ đánh giá? Nếu có, đó là dấu hiệu gì?
-2. Tách điểm thành check kỹ thuật và check quy ước (`rule_`). Skill do curator sinh giúp nhóm check nào? Check quy ước **mới** của tác vụ đánh giá có được skill giúp không, và vì sao?
-3. Dựa vào vết và `skills_read`, giải thích một check mà skill giúp đạt và một check mà skill không giúp (skill chưa được đọc, đọc nhưng không làm theo, skill thiếu hoặc sai).
-4. Chi phí: so sánh số token trung bình giữa các điều kiện. Điều kiện nào có hiệu quả tốt nhất theo điểm trên mỗi token? Đa tác tử có đáng chi phí trong thí nghiệm này không?
-5. Có dấu hiệu rò rỉ dữ liệu hoặc quá khớp nào trong skill sinh ra không? Nhóm đã phòng tránh như thế nào?
-6. Nhiễu: so sánh điểm tác vụ học của cùng bộ skill ở Phần 3.4 (đã sao lưu) và sau đóng băng. Chênh lệch bao nhiêu? Nó cho biết điều gì về độ tin cậy của các chênh lệch trong bảng ở mục 7?
+2. **Kỹ thuật và quy ước.** Cả ba điều kiện đều đạt 18/18 kỹ thuật trên mỗi tập; có hiệu ứng trần nên không chứng minh skill cải thiện kỹ thuật. Skills-auto tăng check quy ước từ 0/9 lên 8/9 trên học và 0/12 lên 7/12 trên đánh giá. Ba quy ước mới đều thất bại: rule_version_bump ở code-eval, rule_sorted_keys_format ở data-eval, rule_source_line ở logs-eval. Bộ skill đóng băng không có quy trình tăng patch version, JSON sort_keys/indent/newline hoặc lưu số dòng nguồn. Các định nghĩa checker này chỉ được xem sau đóng băng, không được đưa lại vào skill.
+
+3. **Cơ chế và trường hợp không chuyển giao.** Ở code-eval, read_file đọc python-bugfix-workflow, sau đó tác tử thêm annotations, tests/test_regressions.py và CHANGELOG.md; ba check tương ứng chuyển từ thất bại sang đạt. Skill đã đọc nhưng thiếu version bump nên check mới vẫn không đạt. Logs-eval đọc skill log và thích nghi với ERROR/SEVERE/FATAL của đề mới, đồng thời giữ chuẩn service, sorting và schema: 9/10; thiếu source_line. Data-eval đọc csv-data-cleaning nhưng viết CSV header có region, còn category được điền chuỗi rỗng trong clean_rows, thay vì header category và giá trị category chuẩn hóa. Trace còn tự assert header cũ và báo Validation passed: đây là kiểm chứng lặp lại giả định sai. meta.source là workspace/orders.json thay vì tên tệp đơn thuần, nên metadata thất bại dù rows_in/rows_used đúng. Quy tắc integer cents vẫn giúp đạt. Những lỗi này cho thấy đọc skill không đồng nghĩa áp dụng đúng hoặc thích nghi schema; skill CSV thiếu linh hoạt khi đổi định dạng và loại trường.
+
+4. **Chi phí.** Trung bình cả sáu tác vụ: baseline 34.115 token, subagents 78.397 (2,30× baseline), skills-auto 53.273 (1,56×). Thời gian trung bình tương ứng 38,9 / 89,2 / 50,4 giây; thời gian runner đo trước bước chấm điểm. Điểm trung bình toàn bộ tương ứng 0,6306 / 0,6306 / 0,8918. Chỉ số điểm trung bình trên 1.000 token = tổng score / tổng token × 1.000 là 0,018484 / 0,008044 / 0,016740: baseline hiệu quả nhất theo chỉ số này, skills-auto đạt điểm cao nhất. Subagents chưa mang lại lợi ích điểm để bù token trong thí nghiệm; chưa suy rộng sang tác vụ lớn hoặc cần song song. Token là đại diện chi phí, không phải hóa đơn USD; chưa xét giá cache hay chi phí khác.
+
+5. **Rò rỉ và quá khớp.** Curator chỉ nhận ba baseline học; validator chặn định danh đánh giá và tên đường dẫn không an toàn; audit lưu nguyên prompt/reply/hash. H1–H3 đã commit trước tag; mọi lần chính thức dùng cùng hash skill và không sửa skill. Không thấy bằng chứng rò rỉ tập đánh giá vào skill. Header region cố định và việc áp dụng nó cho JSON category là bằng chứng cụ thể của quy trình phụ thuộc biểu diễn bài học. Đây là dấu hiệu chuyển giao kém; khoảng cách điểm tổng hợp còn bị ảnh hưởng bởi quy ước mới và độ khó, nên không quy toàn bộ chênh lệch cho quá khớp.
+
+6. **Dao động khi chạy lại cùng skill.** Bản dev được giữ nguyên và có cùng skills_sha256 với bản sau đóng băng:
+
+| Tác vụ học | Điểm dev | Điểm chính thức | Chênh lệch score | Token dev / chính thức |
+|---|---|---|---:|---:|
+| code-learn | 10/10 | 10/10 | 0 | 63.856 / 84.551 |
+| data-learn | 8/8 | 7/8 | -0,125 | 17.792 / 38.054 |
+| logs-learn | 9/9 | 9/9 | 0 | 39.315 / 51.178 |
+
+Điểm học trung bình giảm từ 1,0000 xuống 0,9583, chênh 4,17 điểm phần trăm. data-learn sau đóng băng ghi meta.source=workspace/sales.csv, trong khi dev dùng basename và đạt check. Đây là dao động trong việc thực hiện quy tắc của cùng bộ skill; temperature=0 không bảo đảm mọi lần giống nhau. Token cũng thay đổi đáng kể. Hai lần trên ba tác vụ chỉ cung cấp một quan sát độ dao động, không đủ ước lượng phương sai hoặc khoảng tin cậy; các chênh lệch nhỏ cần nhiều lần lặp hơn.
 
 ## 9. Hạn chế và tính hợp lệ
 
-> Nêu ít nhất 3 hạn chế và ảnh hưởng của từng hạn chế đến kết luận (ví dụ: chỉ 3 tác vụ mỗi vai trò, mỗi cấu hình chạy một lần, nhiễu của mô hình, tác vụ do giảng viên thiết kế sẵn quy ước, chỉ một mô hình).
-
-1.
-2.
-3.
+1. Chỉ ba tác vụ mỗi tập và một lần chính thức mỗi điều kiện; các kết quả không đại diện mọi workload và không đủ kiểm định khác biệt nhỏ.
+2. Chỉ một model alias qua OpenRouter, không chốt seed hay phiên bản máy phục vụ; hai lần cùng skill đã có chênh lệch 4,17 điểm phần trăm trên điểm học trung bình. Không coi temperature=0 là bảo đảm tái lập từng byte.
+3. Tác vụ được thiết kế có quy ước ẩn và feedback học; lợi ích chủ yếu là lưu tri thức Acme. Check kỹ thuật đều đạt trần, nên không suy ra cải thiện năng lực sửa code/parsing tổng quát.
+4. Tập đánh giá đổi biểu diễn và thêm quy ước chưa được phản hồi; khoảng cách học/đánh giá trộn nhiều nguyên nhân, chưa tách riêng tác động quá khớp, invocation và schema shift.
+5. Trace chỉ có luồng chính và cắt mỗi đoạn/args ở 1.500 ký tự; không quan sát đầy đủ nội bộ subagent hoặc mọi sản phẩm trung gian. Count công cụ/subagent/skill chỉ tính luồng chính, trong khi token tính cả subagent.
+6. Thư mục sandbox chỉ chứa bản sao workspace và env shell được giới hạn; đây không phải cô lập hệ điều hành bằng container. Giữ nguyên task gốc được kiểm tra bằng test và audit Git; các khó khăn CRLF/Git được ghi riêng như vấn đề hạ tầng.
 
 ## 10. Kết luận
 
-> Tối đa 5 câu. Chỉ khẳng định điều số liệu hỗ trợ. Nêu một đề xuất cải tiến tiếp theo.
+Trong sáu tác vụ này, skills-auto đạt điểm cao nhất nhờ giữ lại phần lớn quy ước Acme đã học, với điểm đánh giá trung bình 0,8253 so với baseline 0,5973. Subagents không tăng điểm và dùng 2,30 lần token của baseline. Skill CSV được đọc nhưng áp dụng sai metadata và schema ở một số lần, nên skill hợp lệ về định dạng chưa bảo đảm chuyển giao. Lần chạy lại cùng skill làm điểm học trung bình giảm 4,17 điểm phần trăm, cho thấy cần đánh giá lặp. Nghiên cứu tiếp theo nên làm rõ basename và schema theo data dictionary trong phản hồi tập học, sinh lại skill bằng curator rồi đánh giá trên tập giữ riêng mới với nhiều lần lặp.
 
 ## Phụ lục
 
-- Lệnh đã chạy (theo thứ tự):
-- Thử thách mở rộng (nếu có): hướng chọn, kết quả, nhận xét.
-- Ghi chú khác:
+Các lệnh cốt lõi dưới đây được viết gọn tương đương các lời gọi `wsl -d Ubuntu --exec ...` đã chạy trong thư mục gốc. Các bước triển khai source và test ngoại tuyến có thể đối chiếu với CHECKPOINTS.md; các lần gọi API thực hiện tuần tự theo thứ tự thí nghiệm.
+
+```bash
+LAB_PYTHON=/root/.local/share/lab-k4-day20-venv/bin/python
+$LAB_PYTHON -m pytest tests/test_01_provided.py
+$LAB_PYTHON -c "from lab.model import make_model; print(make_model().invoke('Reply with OK').content)"
+$LAB_PYTHON scripts/tour.py
+$LAB_PYTHON -m pytest tests/test_02_agent.py
+$LAB_PYTHON -m pytest tests/test_03_runner.py
+$LAB_PYTHON -m lab.runner --condition baseline --tasks data-learn
+$LAB_PYTHON -m lab.runner --condition baseline --tasks code-learn logs-learn
+# Sao lưu bản code-learn có vấn đề CRLF rồi chạy lại sau khi sửa runner.
+$LAB_PYTHON -m lab.runner --condition baseline --tasks code-learn
+$LAB_PYTHON -m lab.runner --condition subagents --tasks learn
+$LAB_PYTHON -m pytest tests/test_04_curator.py
+$LAB_PYTHON -m pytest
+$LAB_PYTHON -m lab.curator
+$LAB_PYTHON -m lab.runner --condition skills-auto --tasks learn
+# Đã sao lưu results/skills-auto sang results/skills-auto-dev bằng Copy-Item.
+git add src/lab/agent.py src/lab/subagents.py src/lab/runner.py src/lab/curator.py report results skills/auto
+git commit -m hypotheses
+git commit --allow-empty -m "freeze skills"
+git tag freeze
+$LAB_PYTHON -m lab.runner --condition baseline --tasks eval
+$LAB_PYTHON -m lab.runner --condition subagents --tasks eval
+$LAB_PYTHON -m lab.runner --condition skills-auto --tasks all
+git config --local core.autocrlf true
+$LAB_PYTHON scripts/verify_freeze.py
+$LAB_PYTHON -m lab.compare > report/table.md
+$LAB_PYTHON scripts/check_breakdown.py > report/check_breakdown.txt
+$LAB_PYTHON report/verify_artifacts.py
+```
+
+Để kiểm tra bộ nộp hiện tại, chạy pytest, verify_freeze.py và report/verify_artifacts.py trong môi trường Linux đã cài project. Môi trường đầy đủ được ghi trong requirements-freeze.txt; dòng editable dùng `-e .` để chuyển workspace được. Khi clone trên Windows để đối chiếu hash, giữ LF cho SKILL.md; các file này được curator tạo bằng LF và hash dựa trên bytes. Tái chạy thí nghiệm dùng --results thư mục khác để giữ các kết quả hiện tại.
+
+29 test ngoại tuyến đạt (pytest.txt). Audit kiểm tra 18 bản ghi, bảng compare, ba bản dev, nguyên bản skill từ curator, các tệp/hàm được cung cấp và khóa API trong artifact (artifact_audit.txt). Phần 6 của GUIDE là thử thách tùy chọn; bộ kết quả này thực hiện các checkpoint bắt buộc 0–5. GUIDE có tham chiếu README mục 2.3 và 7 không tồn tại trong bản README hiện tại; quy trình áp dụng các chỉ dẫn cụ thể trong GUIDE và RUBRIC.
+
+Tài liệu tham khảo chính: [SkillsBench](https://arxiv.org/abs/2602.12670), [SkillEvolBench](https://skillevolbench.github.io/), [Anthropic multi-agent research system](https://www.anthropic.com/engineering/multi-agent-research-system). Các dự đoán ở mục 2 là suy luận cho lab từ tài liệu và dữ liệu học, không phải kết luận có sẵn của các nguồn này.

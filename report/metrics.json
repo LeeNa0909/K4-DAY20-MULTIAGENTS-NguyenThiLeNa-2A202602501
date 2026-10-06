@@ -1,0 +1,78 @@
+{
+  "groups": [
+    {
+      "condition": "baseline",
+      "role": "learn",
+      "mean_score": 0.6638888888888889,
+      "mean_tokens": 38161.333333333336,
+      "mean_seconds": 40.0,
+      "score_per_1000_tokens": 0.017396899712332436
+    },
+    {
+      "condition": "baseline",
+      "role": "eval",
+      "mean_score": 0.5973063973063973,
+      "mean_tokens": 30069.333333333332,
+      "mean_seconds": 37.766666666666666,
+      "score_per_1000_tokens": 0.019864304628405372
+    },
+    {
+      "condition": "baseline",
+      "role": "all",
+      "mean_score": 0.6305976430976431,
+      "mean_tokens": 34115.333333333336,
+      "mean_seconds": 38.88333333333333,
+      "score_per_1000_tokens": 0.018484287898822907
+    },
+    {
+      "condition": "subagents",
+      "role": "learn",
+      "mean_score": 0.6638888888888889,
+      "mean_tokens": 79449.33333333333,
+      "mean_seconds": 87.03333333333335,
+      "score_per_1000_tokens": 0.008356129133312077
+    },
+    {
+      "condition": "subagents",
+      "role": "eval",
+      "mean_score": 0.5973063973063973,
+      "mean_tokens": 77345.0,
+      "mean_seconds": 91.36666666666667,
+      "score_per_1000_tokens": 0.007722624569220988
+    },
+    {
+      "condition": "subagents",
+      "role": "all",
+      "mean_score": 0.6305976430976431,
+      "mean_tokens": 78397.16666666667,
+      "mean_seconds": 89.2,
+      "score_per_1000_tokens": 0.008043627976746306
+    },
+    {
+      "condition": "skills-auto",
+      "role": "learn",
+      "mean_score": 0.9583333333333334,
+      "mean_tokens": 57927.666666666664,
+      "mean_seconds": 53.26666666666667,
+      "score_per_1000_tokens": 0.01654362049222306
+    },
+    {
+      "condition": "skills-auto",
+      "role": "eval",
+      "mean_score": 0.8252525252525252,
+      "mean_tokens": 48619.333333333336,
+      "mean_seconds": 47.6,
+      "score_per_1000_tokens": 0.016973752387648092
+    },
+    {
+      "condition": "skills-auto",
+      "role": "all",
+      "mean_score": 0.8917929292929293,
+      "mean_tokens": 53273.5,
+      "mean_seconds": 50.43333333333334,
+      "score_per_1000_tokens": 0.01673989749674659
+    }
+  ],
+  "task_runs_total": 22,
+  "measured_tokens_with_curator": 1203048
+}
