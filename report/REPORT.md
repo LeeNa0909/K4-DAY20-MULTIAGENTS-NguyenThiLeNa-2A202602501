@@ -168,6 +168,8 @@ Trong sáu tác vụ này, skills-auto đạt điểm cao nhất nhờ giữ l�
 
 ## Phụ lục
 
+Theo README mục 5, bộ nộp trong `report/` chỉ gồm `REPORT.md` và `table.md`. Các log, snapshot phụ thuộc, thống kê trung gian, `CHECKPOINTS.md` và công cụ `verify_artifacts.py` được nhắc trong báo cáo là tài liệu kiểm tra cục bộ, đã đưa vào `.gitignore`. Bằng chứng nộp nằm trong báo cáo này, bảng so sánh và các `run.json`/`trace.md` thuộc `results/`.
+
 Các lệnh cốt lõi dưới đây được viết gọn tương đương các lời gọi `wsl -d Ubuntu --exec ...` đã chạy trong thư mục gốc. Các bước triển khai source và test ngoại tuyến có thể đối chiếu với CHECKPOINTS.md; các lần gọi API thực hiện tuần tự theo thứ tự thí nghiệm.
 
 ```bash
@@ -201,7 +203,7 @@ $LAB_PYTHON scripts/check_breakdown.py > report/check_breakdown.txt
 $LAB_PYTHON report/verify_artifacts.py
 ```
 
-Để kiểm tra bộ nộp hiện tại, chạy pytest, verify_freeze.py và report/verify_artifacts.py trong môi trường Linux đã cài project. Môi trường đầy đủ được ghi trong requirements-freeze.txt; dòng editable dùng `-e .` để chuyển workspace được. Khi clone trên Windows để đối chiếu hash, giữ LF cho SKILL.md; các file này được curator tạo bằng LF và hash dựa trên bytes. Tái chạy thí nghiệm dùng --results thư mục khác để giữ các kết quả hiện tại.
+Để kiểm tra bộ nộp sau khi clone, cài project theo README trong môi trường Linux, chạy `python -m pytest`, `python scripts/verify_freeze.py` và `python -m lab.compare`. Tại workspace gốc còn có công cụ kiểm tra bổ sung `report/verify_artifacts.py` và snapshot môi trường `requirements-freeze.txt` chỉ lưu cục bộ. Khi clone trên Windows để đối chiếu hash, giữ LF cho SKILL.md; các file này được curator tạo bằng LF và hash dựa trên bytes. Tái chạy thí nghiệm dùng --results thư mục khác để giữ các kết quả hiện tại.
 
 29 test ngoại tuyến đạt (pytest.txt). Audit kiểm tra 18 bản ghi, bảng compare, ba bản dev, nguyên bản skill từ curator, các tệp/hàm được cung cấp và khóa API trong artifact (artifact_audit.txt). Phần 6 của GUIDE là thử thách tùy chọn; bộ kết quả này thực hiện các checkpoint bắt buộc 0–5. GUIDE có tham chiếu README mục 2.3 và 7 không tồn tại trong bản README hiện tại; quy trình áp dụng các chỉ dẫn cụ thể trong GUIDE và RUBRIC.
 

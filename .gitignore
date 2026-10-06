@@ -6,3 +6,9 @@ __pycache__/
 *.egg-info/
 # Tài liệu và mã dành cho giảng viên (đáp án, bản cài đặt tham chiếu, bộ sinh dữ liệu). Chỉ giữ cục bộ.
 instructor/
+
+# README mục 5: chỉ nộp REPORT.md và table.md trong report/.
+# Log, thống kê trung gian và công cụ kiểm tra bổ sung chỉ giữ cục bộ.
+/report/*
+!/report/REPORT.md
+!/report/table.md
