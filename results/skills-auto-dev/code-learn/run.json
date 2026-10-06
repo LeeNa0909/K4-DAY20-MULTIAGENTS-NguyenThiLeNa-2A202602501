@@ -1,0 +1,74 @@
+{
+  "task": "code-learn",
+  "condition": "skills-auto",
+  "role": "learn",
+  "error": null,
+  "timestamp": "2026-10-06T05:08:54.581822+00:00",
+  "skills_sha256": "43a6a2a8e1a2c48bf064218783eaf05859f546e945c3e635227837a97dcd11cc",
+  "seconds": 71.9,
+  "tokens": {
+    "input": 59800,
+    "output": 4056,
+    "total": 63856
+  },
+  "tool_calls": 19,
+  "subagent_calls": 0,
+  "skills_read": 1,
+  "skills_modified": false,
+  "final_message": "Fixed price parsing and half-up discount rounding, added RFC 4180 name escaping, and corrected low-stock filtering and sorting. Added regression tests and documented the fixes in `CHANGELOG.md`. All 10 tests pass.\n\nFiles changed: `inventory/pricing.py`, `inventory/export.py`, `inventory/report.py`, `tests/test_regressions.py`, `CHANGELOG.md`.",
+  "score": 1.0,
+  "passed": 10,
+  "total": 10,
+  "checks": [
+    {
+      "name": "visible_suite_passes",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "tests_not_modified",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "parse_price_all_formats",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "other_caller_fixed",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "discount_rounds_half_up",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "low_stock_follows_docstring",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "csv_quoting_follows_docstring",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "rule_type_hints",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "rule_regression_tests",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "rule_changelog",
+      "passed": true,
+      "detail": ""
+    }
+  ]
+}
